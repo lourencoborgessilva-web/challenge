@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOODWE — Sistema de Gerenciamento de Recarga</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">GW</div>
+            <div>
+                <strong>GOODWE</strong>
+                <span>EV Management</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-view="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-view="sessoes">
+                <i data-lucide="zap"></i>
+                <span>Sessões</span>
+                <span class="nav-badge" id="badge-sessoes">0</span>
+            </button>
+            <button class="nav-item" data-view="energia">
+                <i data-lucide="activity"></i>
+                <span>Energia</span>
+            </button>
+            <button class="nav-item" data-view="ocpp">
+                <i data-lucide="radio"></i>
+                <span>OCPP Log</span>
+                <span class="nav-badge nav-badge-green" id="badge-ocpp">0</span>
+            </button>
+            <button class="nav-item" data-view="relatorios">
+                <i data-lucide="file-bar-chart"></i>
+                <span>Relatórios</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="dot dot-green"></span>
+                <span>Sistema online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 id="view-title">Dashboard</h1>
+                <p id="view-subtitle">Visão geral do sistema de carregamento</p>
+            </div>
+            <div class="topbar-right">
+                <div class="potencia-global">
+                    <i data-lucide="gauge"></i>
+                    <span>Potência total:</span>
+                    <strong id="potencia-total-display">0 kW</strong>
+                    <span class="sep">/</span>
+                    <span id="limite-total-display" class="limite">150 kW</span>
+                </div>
+                <button class="btn-icon" id="btn-nova-sessao" title="Nova sessão">
+                    <i data-lucide="plus"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Views -->
+        <div class="views">
+
+            <!-- DASHBOARD -->
+            <section class="view active" id="view-dashboard">
+
+                <div class="kpi-grid">
+                    <article class="kpi-card">
+                        <div class="kpi-icon kpi-blue"><i data-lucide="zap"></i></div>
+                        <div>
+                            <span>Sessões ativas</span>
+                            <strong id="kpi-sessoes-ativas">0</strong>
+                        </div>
+                    </article>
+                    <article class="kpi-card">
+                        <div class="kpi-icon kpi-green"><i data-lucide="activity"></i></div>
+                        <div>
+                            <span>Potência em uso</span>
+                            <strong id="kpi-potencia-uso">0 kW</strong>
+                        </div>
+                    </article>
+                    <article class="kpi-card">
+                        <div class="kpi-icon kpi-yellow"><i data-lucide="battery-charging"></i></div>
+                        <div>
+                            <span>Energia entregue</span>
+                            <strong id="kpi-energia-total">0,0 kWh</strong>
+                        </div>
+                    </article>
+                    <article class="kpi-card">
+                        <div class="kpi-icon kpi-red"><i data-lucide="circle-dollar-sign"></i></div>
+                        <div>
+                            <span>Receita da sessão</span>
+                            <strong id="kpi-receita">R$ 0,00</strong>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="demanda-card">
+                    <div class="demanda-header">
+                        <div>
+                            <h3>Controle de demanda</h3>
+                            <p>Distribuição inteligente de potência entre os carregadores ativos</p>
+                        </div>
+                        <div class="demanda-valores">
+                            <span id="demanda-uso">0 kW</span>
+                            <span class="sep">/</span>
+                            <span id="demanda-limite">150 kW</span>
+                        </div>
+                    </div>
+                    <div class="barra-demanda-wrap">
+                        <div class="barra-demanda">
+                            <div class="barra-demanda-fill" id="barra-demanda-fill"></div>
+                            <div class="barra-demanda-limite">
+                                <span>80%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="demanda-legenda">
+                        <span class="leg-item"><span class="dot dot-green"></span>Normal (&lt;80%)</span>
+                        <span class="leg-item"><span class="dot dot-yellow"></span>Atenção (80–95%)</span>
+                        <span class="leg-item"><span class="dot dot-red"></span>Crítico (&gt;95%)</span>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h3>Sessões em andamento</h3>
+                    <button class="btn-text" data-view="sessoes">Ver todas →</button>
+                </div>
+                <div id="dashboard-sessoes-lista" class="sessoes-mini-lista">
+                    <div class="empty-state">
+                        <i data-lucide="plug-zap"></i>
+                        <p>Nenhuma sessão ativa. Clique em <strong>+</strong> para iniciar.</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- SESSÕES -->
+            <section class="view" id="view-sessoes">
+                <div class="section-header">
+                    <h3>Gerenciamento de sessões</h3>
+                    <button class="btn-primary" id="btn-nova-sessao-2">
+                        <i data-lucide="plus"></i> Nova sessão
+                    </button>
+                </div>
+                <div id="sessoes-grid" class="sessoes-grid">
+                    <div class="empty-state">
+                        <i data-lucide="plug-zap"></i>
+                        <p>Nenhuma sessão ativa.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ENERGIA -->
+            <section class="view" id="view-energia">
+                <div class="energia-info-grid">
+                    <div class="energia-info-card">
+                        <h3>Regras de controle de potência</h3>
+                        <div class="regras-lista" id="regras-lista"></div>
+                    </div>
+                    <div class="energia-info-card">
+                        <h3>Distribuição por carregador</h3>
+                        <div id="distribuicao-lista" class="distribuicao-lista">
+                            <p class="muted">Sem sessões ativas.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="energia-info-card mt">
+                    <h3>Histórico de eventos de demanda</h3>
+                    <div id="eventos-demanda" class="log-lista">
+                        <p class="muted">Nenhum evento registrado.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OCPP LOG -->
+            <section class="view" id="view-ocpp">
+                <div class="ocpp-header">
+                    <div>
+                        <h3>OCPP 1.6 — Log de mensagens</h3>
+                        <p>Simulação de protocolo de comunicação com plataforma central</p>
+                    </div>
+                    <button class="btn-secondary" id="btn-limpar-ocpp">
+                        <i data-lucide="trash-2"></i> Limpar log
+                    </button>
+                </div>
+                <div id="ocpp-log" class="ocpp-log">
+                    <div class="ocpp-entry ocpp-system">
+                        <span class="ocpp-time">--:--:--</span>
+                        <span class="ocpp-dir">[SYSTEM]</span>
+                        <span class="ocpp-msg">Central System iniciado. Aguardando conexões dos charge points...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RELATÓRIOS -->
+            <section class="view" id="view-relatorios">
+                <div class="relatorio-controles">
+                    <button class="btn-primary" id="btn-gerar-relatorio">
+                        <i data-lucide="refresh-cw"></i> Gerar relatório
+                    </button>
+                    <button class="btn-secondary" id="btn-limpar-historico">
+                        <i data-lucide="trash-2"></i> Limpar histórico
+                    </button>
+                </div>
+                <div id="relatorio-conteudo" class="relatorio-conteudo">
+                    <p class="muted">Clique em "Gerar relatório" para visualizar o resumo das sessões.</p>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Modal nova sessão -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Nova sessão de recarga</h2>
+            <button class="btn-icon" id="btn-fechar-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Identificador do veículo</label>
+                    <input type="text" id="m-veiculo" placeholder="Ex: ABC-1234" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de usuário</label>
+                    <select id="m-tipo">
+                        <option value="comum">Comum</option>
+                        <option value="assinante">Assinante GOODWE+</option>
+                        <option value="corporativo">Corporativo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Capacidade da bateria (kWh)</label>
+                    <input type="number" id="m-capacidade" placeholder="60" min="10" max="200" value="60">
+                </div>
+                <div class="form-group">
+                    <label>Bateria inicial (%)</label>
+                    <input type="number" id="m-inicial" placeholder="20" min="0" max="99" value="20">
+                </div>
+                <div class="form-group">
+                    <label>Bateria desejada (%)</label>
+                    <input type="number" id="m-desejada" placeholder="80" min="1" max="100" value="80">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Origem da energia</label>
+                    <select id="m-energia">
+                        <option value="fotovoltaica">Fotovoltaica</option>
+                        <option value="rede">Rede elétrica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Potência do carregador (kW)</label>
+                    <select id="m-potencia">
+                        <option value="7.4">7,4 kW — AC Nível 2</option>
+                        <option value="22" selected>22 kW — AC Trifásico</option>
+                        <option value="50">50 kW — DC Fast</option>
+                        <option value="150">150 kW — DC Ultra Fast</option>
+                    </select>
+                </div>
+            </div>
+            <div id="modal-erro" class="modal-erro" style="display:none"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button class="btn-primary" id="btn-confirmar-sessao">
+                <i data-lucide="zap"></i> Iniciar sessão
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="sistema.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
